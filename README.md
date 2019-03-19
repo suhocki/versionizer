@@ -2,12 +2,10 @@
 Generates version based on git logs
 
 ### usage
---type 
+name - print full version
+code - print commits count in current branch
 
-name - print full version name like "1.0.2"  
-code - print version code like "1"
-
-version looks like X.Y.Z, where:  
-X - version code (based on master branch merges count)  
-Y - major version (based on develop branch merges count)  
-Z - minor version (based on commits count in some feature/bug branch)
+version looks like X.Y.Z, where:
+X - version code or count of merges to master
+Y - major version or count of merges to develop
+Z - minor version or count of commits into current non-master and non-develop branch. If current branch is master or develop, then 0 will return

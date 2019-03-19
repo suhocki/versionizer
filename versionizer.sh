@@ -1,24 +1,32 @@
 #!/bin/bash
 manualUrl=https://raw.githubusercontent.com/suhocki/versionizer/master/README.md
 mergesInMasterFromDevelop=$(git shortlog origin/master --merges | grep ".*\/develop" | wc -l)
-if [[ $1 = "--type" ]]
-    then
-        if [[ $2 = name ]]
-            then
-                mergesInMaster=$(git rev-list origin/master --merges --count)
-                mergesInDevelop=$(git rev-list origin/develop --merges --count)
-                if [[ ${mergesInDevelop} -gt ${mergesInMaster} ]]
-                    then echo "v0.$mergesInMasterFromDevelop.$((mergesInDevelop - mergesInMaster))"
-                    else echo "v0.$mergesInMasterFromDevelop"
-                fi
-        else if [[ $2 = code ]]
-            then mergesInMasterFromDevelop=$(git shortlog origin/master --merges | grep ".*\/develop" | wc -l)
-                if [[ ${mergesInMasterFromDevelop} -le 0 ]]
-                    then mergesInMasterFromDevelop=1
-                fi
-            echo ${mergesInMasterFromDevelop}
-        else curl ${manualUrl}
-	    fi
-        fi
-    else curl ${manualUrl}
+currentBranch=$(git branch | grep \* | cut -d ' ' -f2)
+if [[ $1 = name ]]
+then
+    mergesInMaster=$(git rev-list origin/master --merges --count)
+    mergesInDevelop=$(git rev-list origin/develop --merges --count)
+    releaseVersion=${mergesInMasterFromDevelop}
+    majorVersion=${mergesInMasterFromDevelop}
+    minorVersion=0
+    if [[ ${mergesInDevelop} -gt ${mergesInMaster} ]]
+        then majorVersion=$((mergesInDevelop - mergesInMaster))
+    fi
+    if ! [[ "$currentBranch" =~ ^(master|develop)$ ]]
+        then
+            commitCountInCurrentBranch=$(git rev-list --count HEAD)
+            commitCountInDevelopBranch=$(git rev-list --count origin/develop)
+            minorVersion=$((commitCountInCurrentBranch - commitCountInDevelopBranch))
+    fi
+    echo "$releaseVersion.$majorVersion.$minorVersion"
+else if [[ $1 = code ]]
+then
+    mergesInDevelop=$(git rev-list origin/develop --merges --count)
+    code=${mergesInDevelop}
+    if [[ ${mergesInDevelop} -le 0 ]]
+        then code=1
+    fi
+    echo ${code}
+else curl ${manualUrl}
+fi
 fi
